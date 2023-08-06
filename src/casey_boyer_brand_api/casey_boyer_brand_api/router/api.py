@@ -70,13 +70,7 @@ def contact(*args, **kwargs):
 
     body = json.loads(event.get("body", "{}"))
     logger.debug(f"parsing body: {body}")
-    handle_contact_us(
-        CustomerTableRecord(
-            Name=body.pop("name", None),
-            Email=body.pop("email", None),
-            Phone=body.pop("phone", None),
-        )
-    )
+    handle_contact_us(CustomerTableRecord.from_dict(body))
 
     response = {
         "message": "contact info received",

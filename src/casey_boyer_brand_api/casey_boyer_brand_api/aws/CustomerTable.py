@@ -49,9 +49,4 @@ class CustomerTable:
         return None
 
     def _create_customer_table_record(self, item: Dict[str, Any]):
-        return CustomerTableRecord(
-            Name=item.pop("Name", None),
-            Email=item.pop("Email", None),
-            Phone=item.pop("Phone", None),
-            **item,
-        )
+        return CustomerTableRecord.from_dict(item)
