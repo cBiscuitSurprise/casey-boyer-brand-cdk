@@ -6,6 +6,8 @@ import json
 
 from casey_boyer_brand_api.aws.CustomerTableRecord import CustomerTableRecord
 from casey_boyer_brand_api.contact_us import handle_contact_us
+from casey_boyer_brand_api.utils.string import capitalize
+
 
 api = Router(trim_last_slash=True)
 logger = logging.getLogger(__name__)
@@ -70,7 +72,9 @@ def contact(*args, **kwargs):
 
     body = json.loads(event.get("body", "{}"))
     logger.debug(f"parsing body: {body}")
-    handle_contact_us(CustomerTableRecord.from_dict(body))
+    handle_contact_us(
+        CustomerTableRecord.from_dict({capitalize(k): v for k, v in body.items()})
+    )
 
     response = {
         "message": "contact info received",

@@ -12,7 +12,7 @@ def new_id():
 class CustomerTableRecord:
     id: Optional[str] = field(default_factory=new_id)
     Name: Optional[str] = None
-    Email: Optional[str] = None
+    Email: str = "no-email"
     Phone: Optional[str] = None
     Message: Optional[str] = None
     extra: Dict[str, Any] = field(default_factory=dict)
@@ -43,13 +43,19 @@ class CustomerTableRecord:
         if update.extra is not None:
             self.extra = update.extra
 
+        if update.Message is not None:
+            self.Message = update.Message
+
     def toDynamoDbRecord(self):
         return {
             "Key": {"Id": self.id},
             "AttributeUpdates": {
                 "Name": {"Action": "PUT", "Value": self.Name},
                 "Email": {"Action": "PUT", "Value": self.Email},
-                "Phone": {"Action": "PUT", "Value": self.Phone},
+                "Phone": {
+                    "Action": "PUT",
+                    "Value": self.Phone if self.Phone else self.Email,
+                },
                 "Message": {"Action": "PUT", "Value": self.Phone},
                 **{k: {"Action": "PUT", "Value": v} for k, v in self.extra.items()},
             },

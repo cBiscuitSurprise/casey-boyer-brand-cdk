@@ -12,10 +12,10 @@ def handle_contact_us(input: CustomerTableRecord):
     table = get_customer_table()
 
     record = None
-    if input.Email is not None:
+    if input.Email:
         record = table.get_with_email(input.Email)
 
-    if record is None and input.Phone is not None:
+    if record is None and input.Phone:
         record = table.get_with_phone(input.Phone)
     else:
         logger.debug("found existing record via email")

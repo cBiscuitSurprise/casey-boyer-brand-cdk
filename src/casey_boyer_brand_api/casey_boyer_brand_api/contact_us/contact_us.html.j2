@@ -1,8 +1,15 @@
-Home Base `Contact Us` Form Submitted with:
+`Contact Us` Form Submitted with:
 
   * Name: {{ record.Name if (record.Name) else 'NOT PROVIDED' }}
   * Email: {{ record.Email if (record.Email) else 'NOT PROVIDED' }}
   * Phone: {{ record.Phone if (record.Phone) else 'NOT PROVIDED' }}
-  * Message: {{ record.Message if (record.Message) else 'NOT PROVIDED' }}
+  * Message:
+    {% if record.Message -%}
+    {% for line in record.Message.split('\n') -%}
+    >>> {{ line }}
+    {% endfor %}
+    {% else %}
+    >>> NOT PROVIDED
+    {%- endif %}
 
 😁
