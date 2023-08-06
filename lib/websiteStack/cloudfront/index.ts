@@ -48,33 +48,14 @@ export function createCaseyBoyerBrandWebsitetDistribution(scope: Construct, prop
     certificate: Certificate.fromCertificateArn(scope, 'CaseyBoyerBrandWebsiteCertificate', certificateArn),
     domainNames: ['casey.boyer.consulting', 'www.casey.boyer.consulting'],
     defaultRootObject: 'index.html',
+    enableLogging: true,
+    logIncludesCookies: true,
+    comment: 'Casey Boyer brand site',
   });
 
-  const comS3PolicyOverride = props.bucket.node.findChild('Policy').node.defaultChild as CfnBucketPolicy;
-  const statement = comS3PolicyOverride.policyDocument.statements[1];
-  if (statement['_principal'] && statement['_principal'].CanonicalUser) {
-    delete statement['_principal'].CanonicalUser;
-  }
-  comS3PolicyOverride.addOverride('Properties.PolicyDocument.Statement.1.Principal', {
-    Service: 'cloudfront.amazonaws.com',
-  });
-  comS3PolicyOverride.addOverride('Properties.PolicyDocument.Statement.1.Condition', {
-    StringEquals: {
-      'AWS:SourceArn': Stack.of(distro).formatArn({
-        service: 'cloudfront',
-        region: '',
-        resource: 'distribution',
-        resourceName: distro.distributionId,
-        arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
-      }),
-    },
-  });
+  _addAccessPolicyToS3(props.bucket, distro);
 
-  const cfnDistribution = distro.node.defaultChild as CfnDistribution;
-  cfnDistribution.addOverride('Properties.DistributionConfig.Origins.0.S3OriginConfig.OriginAccessIdentity', '');
-  cfnDistribution.addPropertyOverride('DistributionConfig.Origins.0.OriginAccessControlId', oac.getAtt('Id'));
-  const s3OriginNode = distro.node.findAll().filter((child) => child.node.id === 'S3Origin');
-  s3OriginNode[0].node.tryRemoveChild('Resource');
+  _workaroundUpdateOriginAccessConfiguration(distro, oac);
 
   const functionUrl = new FunctionUrl(scope, 'LambdaApiUrl', {
     function: props.apiFunction,
@@ -117,4 +98,34 @@ export function createCaseyBoyerBrandWebsitetDistribution(scope: Construct, prop
     distribution: distro,
     functionUrl: functionUrl,
   };
+}
+
+function _addAccessPolicyToS3(bucket: Bucket, distro: Distribution) {
+  const comS3PolicyOverride = bucket.node.findChild('Policy').node.defaultChild as CfnBucketPolicy;
+  const statement = comS3PolicyOverride.policyDocument.statements[1];
+  if (statement['_principal'] && statement['_principal'].CanonicalUser) {
+    delete statement['_principal'].CanonicalUser;
+  }
+  comS3PolicyOverride.addOverride('Properties.PolicyDocument.Statement.1.Principal', {
+    Service: 'cloudfront.amazonaws.com',
+  });
+  comS3PolicyOverride.addOverride('Properties.PolicyDocument.Statement.1.Condition', {
+    StringEquals: {
+      'AWS:SourceArn': Stack.of(distro).formatArn({
+        service: 'cloudfront',
+        region: '',
+        resource: 'distribution',
+        resourceName: distro.distributionId,
+        arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
+      }),
+    },
+  });
+}
+
+function _workaroundUpdateOriginAccessConfiguration(distro: Distribution, oac: CfnOriginAccessControl) {
+  const cfnDistribution = distro.node.defaultChild as CfnDistribution;
+  cfnDistribution.addOverride('Properties.DistributionConfig.Origins.0.S3OriginConfig.OriginAccessIdentity', '');
+  cfnDistribution.addPropertyOverride('DistributionConfig.Origins.0.OriginAccessControlId', oac.getAtt('Id'));
+  const s3OriginNode = distro.node.findAll().filter((child) => child.node.id === 'S3Origin');
+  s3OriginNode[0].node.tryRemoveChild('Resource');
 }
