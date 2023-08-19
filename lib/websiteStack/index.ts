@@ -33,7 +33,7 @@ export function createWebsiteStack(scope: Construct) {
       effect: Effect.ALLOW,
       actions: ['kms:Encrypt', 'kms:Decrypt', 'kms:GenerateDataKey'],
       resources: [customerTable.encryptionKey!.keyArn],
-    })
+    }),
   );
   lambdas.caseyBoyerBrandApi.addToRolePolicy(
     new PolicyStatement({
@@ -48,7 +48,7 @@ export function createWebsiteStack(scope: Construct) {
         'dynamodb:UpdateItem',
       ],
       resources: [customerTable.tableArn, `${customerTable.tableArn}/index/*`],
-    })
+    }),
   );
 
   const contactUsTopic = new ContactUsTopic(scope, 'CaseyBoyerBrandContactUsTopic');
@@ -58,13 +58,13 @@ export function createWebsiteStack(scope: Construct) {
       effect: Effect.ALLOW,
       actions: ['sns:Publish'],
       resources: [contactUsTopic.topicArn],
-    })
+    }),
   );
   lambdas.caseyBoyerBrandApi.addToRolePolicy(
     new PolicyStatement({
       effect: Effect.ALLOW,
       actions: ['kms:Encrypt', 'kms:Decrypt', 'kms:GenerateDataKey'],
       resources: [contactUsTopic.encryptionKey.keyArn],
-    })
+    }),
   );
 }

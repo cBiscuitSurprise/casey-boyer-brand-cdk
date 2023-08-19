@@ -1,6 +1,6 @@
-import { Certificate, CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
-import { IHostedZone } from "aws-cdk-lib/aws-route53";
-import { Construct } from "constructs";
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { IHostedZone } from 'aws-cdk-lib/aws-route53';
+import { Construct } from 'constructs';
 
 interface CertificateProps {
   hostedZone: IHostedZone;
