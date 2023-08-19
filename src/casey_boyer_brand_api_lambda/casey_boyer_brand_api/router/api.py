@@ -1,43 +1,19 @@
 from datetime import datetime
 import logging
-from typing import Any, Dict, List, Optional
-from http_router import Router
 import json
+
+from http_router import Router
 
 from casey_boyer_brand_api.aws.CustomerTableRecord import CustomerTableRecord
 from casey_boyer_brand_api.contact_us import handle_contact_us
 from casey_boyer_brand_api.utils.string import capitalize
+from casey_boyer_brand_api.router.projects import router_projects
+from casey_boyer_brand_api.utils.http import handle_options_request
 
-
-api = Router(trim_last_slash=True)
 logger = logging.getLogger(__name__)
 
-
-def get_header(headers: Dict[str, str], name: str):
-    return headers.get(name, headers.get(name.lower()))
-
-
-def handle_options_request(headers: Dict[str, Any], allowed_methods: List[str]):
-    logger.debug("handling OPTIONS request: " + str((headers, allowed_methods)))
-    requested_methods = get_header(headers, "access-control-request-method")
-    requested_origin: Optional[str] = get_header(headers, "origin")
-    if (
-        requested_methods in allowed_methods
-        and requested_origin is not None
-        and requested_origin.startswith("http://localhost")
-    ):
-        return {
-            "statusCode": 200,
-            "isBase64Encoded": False,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": requested_origin,
-                "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        }
-    else:
-        raise ValueError("invalid OPTIONS request")
+api = Router(trim_last_slash=True)
+api.route("/projects")(router_projects)
 
 
 @api.route("/health-check", methods=["GET", "POST", "OPTIONS"])

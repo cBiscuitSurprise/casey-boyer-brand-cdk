@@ -23,10 +23,13 @@ def handler(event, context):
     # event.requestContext.http.path
     # event.requestContext.http.userAgent == 'Amazon CloudFront'
 
-    match = router(event["rawPath"], method=event["requestContext"]["http"]["method"])
-
     try:
-        response = cast(Match, match).target(event, pathParameters=match.params)
+        match = router(
+            event["rawPath"],
+            method=event["requestContext"]["http"]["method"],
+        )
+
+        response = match.target(event, pathParameters=match.params)
         logger.debug(f"response: {response}")
         return response
     except NotFoundError as e:

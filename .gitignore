@@ -1,2 +1,7 @@
 cdk.out/
 node_modules/
+.venv/
+__pycache__/
+
+cdk.context.json
+.tool-versions
